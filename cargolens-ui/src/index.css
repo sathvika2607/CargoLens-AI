@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased bg-slate-50 text-slate-900 selection:bg-brand-500 selection:text-white;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+@layer utilities {
+  .pdf-viewer-scroller {
+    --scrollbar-thumb: #94a3b8;
+    --scrollbar-track: #f1f5f9;
+
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    scrollbar-width: thin;
+  }
+
+  @supports not (scrollbar-color: auto) {
+    .pdf-viewer-scroller::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    .pdf-viewer-scroller::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-thumb);
+      border-radius: 4px;
+    }
+
+    .pdf-viewer-scroller::-webkit-scrollbar-track {
+      background: var(--scrollbar-track);
+    }
+  }
+}

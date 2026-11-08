@@ -1,0 +1,93 @@
+# Environment variables and secrets
+.env
+.env.local
+*.env
+!.env.example
+
+# Python
+.venv/
+venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.log
+
+# Node & Frontend
+node_modules/
+cargolens-ui/node_modules/
+cargolens-ui/dist/
+cargolens-ui/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Database & Persistent storage
+pg_data/
+*.sqlite3
+*.db
+storage/
+cargolens-api/storage/
+storage/uploads/
+storage/exports/
+storage/documents/
+
+# Uploaded documents and customer data
+uploads/
+exports/
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.tif
+*.tiff
+
+# OS and IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local scratch files and generated reports
+scratch/
+**/scratch/
+full-backend-test-report.txt
+scratch_ci_*.png
+*.err
