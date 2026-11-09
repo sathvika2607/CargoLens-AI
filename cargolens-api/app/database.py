@@ -1,4 +1,5 @@
 import time
+import logging
 from typing import AsyncGenerator, Dict, Any
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
@@ -8,6 +9,16 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy import text
 from app.config import settings
+logger = logging.getLogger(__name__)
+
+logger.warning(
+    "DATABASE CONFIG CHECK: host=%r port=%r db=%r user_configured=%s password_configured=%s",
+    settings.POSTGRES_SERVER,
+    settings.POSTGRES_PORT,
+    settings.POSTGRES_DB,
+    bool(settings.POSTGRES_USER),
+    bool(settings.POSTGRES_PASSWORD),
+)
 
 # Create async engine with connection pooling and pre-ping
 async_engine: AsyncEngine = create_async_engine(
