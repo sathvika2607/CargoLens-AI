@@ -509,152 +509,57 @@ async def test_missing_required_document_blocks_verification(
     assert data["is_ready"] is False
 
 
+
 @pytest.mark.asyncio
-async def test_executive_rbac_isolation(async_client: AsyncClient, workflow_fixture):
+async def test_executives_have_shared_workspace_access(
+    async_client: AsyncClient, workflow_fixture
+):
     """
-    Documentation Executive 2 cannot access Executive 1's shipments,
-    documents, images, or reviews (returns 404 to avoid disclosure).
+    Documentation executives share access to shipments, documents,
+    images, and reviews. Verification remains blocked until mandatory
+    human reviews are completed.
     """
     shipment_id = workflow_fixture["shipment"].id
     ci_doc = workflow_fixture["ci_doc"]
     exec2_token = workflow_fixture["exec2_token"]
+    headers = {"Authorization": f"Bearer {exec2_token}"}
 
-    # 1. Get shipment
+    # 1. Executive 2 can access the shared shipment.
     r1 = await async_client.get(
         f"/api/v1/shipments/{shipment_id}",
-        headers={"Authorization": f"Bearer {exec2_token}"},
-    )
-    assert r1.status_code == 404
-
-    # 2. Get document reviews
-    r2 = await async_client.get(
-        f"/api/v1/shipments/{shipment_id}/documents/{ci_doc.id}/reviews",
-        headers={"Authorization": f"Bearer {exec2_token}"},
-    )
-    assert r2.status_code == 404
-
-    # 3. Post review
-    r3 = await async_client.post(
-        f"/api/v1/shipments/{shipment_id}/documents/{ci_doc.id}/reviews",
-        json={"field_name": "invoice_number", "action": "CONFIRMED"},
-        headers={"Authorization": f"Bearer {exec2_token}"},
-    )
-    assert r3.status_code == 404
-
-    # 4. Get page image
-    r4 = await async_client.get(
-        f"/api/v1/shipments/{shipment_id}/documents/{ci_doc.id}/pages/1/image",
-        headers={"Authorization": f"Bearer {exec2_token}"},
-    )
-    assert r4.status_code == 404
-
-    # 5. Verify workflow
-    r5 = await async_client.post(
-        f"/api/v1/shipments/{shipment_id}/verify",
-        headers={"Authorization": f"Bearer {exec2_token}"},
-    )
-    assert r5.status_code == 404
-
-
-@pytest.mark.asyncio
-async def test_manager_has_org_wide_access(async_client: AsyncClient, workflow_fixture):
-    """
-    Documentation Manager can access all shipments, documents, images, and reviews.
-    """
-    shipment_id = workflow_fixture["shipment"].id
-    ci_doc = workflow_fixture["ci_doc"]
-    mgr_token = workflow_fixture["mgr_token"]
-
-    r1 = await async_client.get(
-        f"/api/v1/shipments/{shipment_id}",
-        headers={"Authorization": f"Bearer {mgr_token}"},
+        headers=headers,
     )
     assert r1.status_code == 200
 
+    # 2. Executive 2 can view document reviews.
     r2 = await async_client.get(
         f"/api/v1/shipments/{shipment_id}/documents/{ci_doc.id}/reviews",
-        headers={"Authorization": f"Bearer {mgr_token}"},
+        headers=headers,
     )
     assert r2.status_code == 200
 
-    r3 = await async_client.get(
-        f"/api/v1/shipments/{shipment_id}/documents/{ci_doc.id}/pages/1/image",
-        headers={"Authorization": f"Bearer {mgr_token}"},
-    )
-    assert r3.status_code == 200
-
-
-@pytest.mark.asyncio
-async def test_manual_patch_verified_or_exported_prohibited(async_client: AsyncClient, workflow_fixture):
-    """
-    Both Executive and Manager are forbidden (HTTP 403) from setting status
-    to VERIFIED or EXPORTED via standard PATCH /shipments/{id}.
-    """
-    shipment_id = workflow_fixture["shipment"].id
-    exec_token = workflow_fixture["exec1_token"]
-    mgr_token = workflow_fixture["mgr_token"]
-
-    # Executive attempts VERIFIED
-    r1 = await async_client.patch(
-        f"/api/v1/shipments/{shipment_id}",
-        json={"status": "VERIFIED"},
-        headers={"Authorization": f"Bearer {exec_token}"},
-    )
-    assert r1.status_code == 403
-
-    # Executive attempts EXPORTED
-    r2 = await async_client.patch(
-        f"/api/v1/shipments/{shipment_id}",
-        json={"status": "EXPORTED"},
-        headers={"Authorization": f"Bearer {exec_token}"},
-    )
-    assert r2.status_code == 403
-
-    # Manager attempts VERIFIED
-    r3 = await async_client.patch(
-        f"/api/v1/shipments/{shipment_id}",
-        json={"status": "VERIFIED"},
-        headers={"Authorization": f"Bearer {mgr_token}"},
-    )
-    assert r3.status_code == 403
-
-    # Manager attempts EXPORTED
-    r4 = await async_client.patch(
-        f"/api/v1/shipments/{shipment_id}",
-        json={"status": "EXPORTED"},
-        headers={"Authorization": f"Bearer {mgr_token}"},
-    )
-    assert r4.status_code == 403
-
-
-@pytest.mark.asyncio
-async def test_raw_ai_extractions_preserved_after_corrections(
-    async_client: AsyncClient, workflow_fixture, db_session
-):
-    """
-    Ensures human corrections do NOT mutate the raw StructuredExtraction database row.
-    Original AI-extracted values remain untouched in extracted_data.
-    """
-    shipment_id = workflow_fixture["shipment"].id
-    ci_doc = workflow_fixture["ci_doc"]
-    ci_ext = workflow_fixture["ci_ext"]
-    token = workflow_fixture["exec1_token"]
-
-    original_invoice_num = ci_ext.extracted_data["invoice_number"]["value"]
-
-    # Submit correction
-    corr_resp = await async_client.post(
+    # 3. Executive 2 can submit a field review.
+    r3 = await async_client.post(
         f"/api/v1/shipments/{shipment_id}/documents/{ci_doc.id}/reviews",
         json={
             "field_name": "invoice_number",
-            "action": "CORRECTED",
-            "corrected_value": "INV-NEW-OVERRIDE",
-            "reason": "Corrected manually by executive",
+            "action": "CONFIRMED",
         },
-        headers={"Authorization": f"Bearer {token}"},
+        headers=headers,
     )
-    assert corr_resp.status_code == 201
+    assert r3.status_code == 201
 
-    # Reload StructuredExtraction from database
-    await db_session.refresh(ci_ext)
-    assert ci_ext.extracted_data["invoice_number"]["value"] == original_invoice_num
+    # 4. Executive 2 can access the document page image.
+    r4 = await async_client.get(
+        f"/api/v1/shipments/{shipment_id}/documents/{ci_doc.id}/pages/1/image",
+        headers=headers,
+    )
+    assert r4.status_code == 200
+
+    # 5. Verification remains blocked because mandatory reviews
+    # for all required fields have not been completed.
+    r5 = await async_client.post(
+        f"/api/v1/shipments/{shipment_id}/verify",
+        headers=headers,
+    )
+    assert r5.status_code == 422

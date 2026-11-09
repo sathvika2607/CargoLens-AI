@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     MAX_PDF_PAGES: int = 50
     MAX_IMAGE_DIMENSION: int = 10000
 
+    # Supabase Storage Configuration
+    SUPABASE_URL: Union[str, None] = None
+    SUPABASE_SERVICE_ROLE_KEY: Union[str, None] = None
+    SUPABASE_STORAGE_BUCKET: str = "cargolens-documents"
+
     # Background Processing Configuration
     WORKER_MAX_ATTEMPTS: int = 3
     WORKER_POLL_INTERVAL_SECONDS: float = 2.0

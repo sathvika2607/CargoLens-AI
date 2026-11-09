@@ -58,6 +58,7 @@ pg_data/
 *.db
 storage/
 cargolens-api/storage/
+!cargolens-api/app/storage/
 storage/uploads/
 storage/exports/
 storage/documents/
