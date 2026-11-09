@@ -16,3 +16,5 @@ python-multipart>=0.0.9
 pypdf>=4.0.0
 pillow>=10.2.0
 pymupdf>=2.1.0,<3.0.0
+anthropic>=0.40.0,<3.0.0
+pytesseract>=0.3.10
