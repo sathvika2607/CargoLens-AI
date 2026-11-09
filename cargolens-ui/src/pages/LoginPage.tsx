@@ -15,6 +15,8 @@ import {
   FileCheck2,
   Zap,
   Sparkles,
+  Shield,
+  UserCheck,
 } from 'lucide-react'
 
 export const LoginPage: React.FC = () => {
@@ -28,6 +30,14 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const isDemoEnabled = import.meta.env.VITE_ENABLE_DEMO_LOGINS !== 'false'
+
+  const handleSelectDemo = (demoEmail: string, demoPassword: string) => {
+    setEmail(demoEmail)
+    setPassword(demoPassword)
+    setError(null)
+  }
 
   // Redirect if already authenticated
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/shipments'
@@ -199,6 +209,52 @@ export const LoginPage: React.FC = () => {
               <div className="text-xs text-rose-200">
                 <span className="font-semibold text-rose-100">Authentication Error:</span> {error}
               </div>
+            </div>
+          )}
+
+          {/* Demo Access Section */}
+          {isDemoEnabled ? (
+            <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-brand-400" />
+                  Demo Access
+                </span>
+                <span className="text-[10px] text-slate-500 font-mono">Reviewer Fast-Fill</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  data-testid="demo-executive-btn"
+                  onClick={() => handleSelectDemo('executive@cargolens.in', 'DemoExecutive2026!')}
+                  className="flex flex-col items-start p-2.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-brand-500/50 hover:bg-slate-800/60 text-left transition group cursor-pointer"
+                >
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-200 group-hover:text-brand-300">
+                    <UserCheck className="h-3.5 w-3.5 text-sky-400" />
+                    <span>Documentation Executive</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 mt-0.5">Operations &amp; Review</span>
+                </button>
+                <button
+                  type="button"
+                  data-testid="demo-manager-btn"
+                  onClick={() => handleSelectDemo('manager@cargolens.in', 'DemoManager2026!')}
+                  className="flex flex-col items-start p-2.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-800/60 text-left transition group cursor-pointer"
+                >
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-200 group-hover:text-indigo-300">
+                    <Shield className="h-3.5 w-3.5 text-indigo-400" />
+                    <span>Documentation Manager</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 mt-0.5">Oversight &amp; Approvals</span>
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400 text-center">
+                Select a role to populate credentials, then click <span className="text-slate-200 font-medium">Sign In to Terminal</span> below.
+              </p>
+            </div>
+          ) : (
+            <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 text-xs text-slate-400">
+              <span className="font-semibold text-slate-300">Demo Access Notice:</span> Demo fast-fill is disabled in this environment. Please consult <span className="font-mono text-brand-400">deployment.md</span> for reviewer login credentials.
             </div>
           )}
 

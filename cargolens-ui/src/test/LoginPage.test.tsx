@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { LoginPage } from '../pages/LoginPage'
 import * as AuthContext from '../context/AuthContext'
 
@@ -10,10 +10,12 @@ vi.mock('../context/AuthContext', () => ({
 
 describe('LoginPage', () => {
   const mockLogin = vi.fn()
+  const originalEnv = import.meta.env.VITE_ENABLE_DEMO_LOGINS
 
   beforeEach(() => {
     vi.clearAllMocks()
     mockLogin.mockResolvedValue(undefined)
+    import.meta.env.VITE_ENABLE_DEMO_LOGINS = 'true'
 
     vi.mocked(AuthContext.useAuth).mockReturnValue({
       user: null,
@@ -26,7 +28,11 @@ describe('LoginPage', () => {
     })
   })
 
-  it('renders the standard login form without exposing demo credentials', () => {
+  afterEach(() => {
+    import.meta.env.VITE_ENABLE_DEMO_LOGINS = originalEnv
+  })
+
+  it('renders the login form and both demo-access options when enabled', () => {
     render(
       <MemoryRouter>
         <LoginPage />
@@ -37,14 +43,74 @@ describe('LoginPage', () => {
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument()
 
-    expect(screen.queryByText(/1-click demonstration logins/i)).not.toBeInTheDocument()
-    expect(screen.queryByText('DemoExecutive2026!')).not.toBeInTheDocument()
-    expect(screen.queryByText('DemoManager2026!')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('demo-executive-btn')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('demo-manager-btn')).not.toBeInTheDocument()
+    // Demo Access section & options
+    expect(screen.getByText(/demo access/i)).toBeInTheDocument()
+    expect(screen.getByTestId('demo-executive-btn')).toBeInTheDocument()
+    expect(screen.getByTestId('demo-manager-btn')).toBeInTheDocument()
+
+    // Simulation Center must NOT be a login button
+    expect(screen.queryByRole('button', { name: /simulation center/i })).not.toBeInTheDocument()
   })
 
-  it('submits the entered credentials through the authentication context', async () => {
+  it('populates fields with Executive credentials when Documentation Executive is clicked without auto-login', () => {
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>
+    )
+
+    const execBtn = screen.getByTestId('demo-executive-btn')
+    fireEvent.click(execBtn)
+
+    const emailInput = screen.getByLabelText(/work email address/i) as HTMLInputElement
+    const passwordInput = screen.getByLabelText(/password/i) as HTMLInputElement
+
+    expect(emailInput.value).toBe('executive@cargolens.in')
+    expect(passwordInput.value).toBe('DemoExecutive2026!')
+
+    // Crucial: Must NOT auto-login
+    expect(mockLogin).not.toHaveBeenCalled()
+  })
+
+  it('populates fields with Manager credentials when Documentation Manager is clicked without auto-login', () => {
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>
+    )
+
+    const managerBtn = screen.getByTestId('demo-manager-btn')
+    fireEvent.click(managerBtn)
+
+    const emailInput = screen.getByLabelText(/work email address/i) as HTMLInputElement
+    const passwordInput = screen.getByLabelText(/password/i) as HTMLInputElement
+
+    expect(emailInput.value).toBe('manager@cargolens.in')
+    expect(passwordInput.value).toBe('DemoManager2026!')
+
+    // Crucial: Must NOT auto-login
+    expect(mockLogin).not.toHaveBeenCalled()
+  })
+
+  it('authenticates through the login flow when user selects demo option and clicks Sign In', async () => {
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>
+    )
+
+    fireEvent.click(screen.getByTestId('demo-executive-btn'))
+    fireEvent.click(screen.getByRole('button', { name: /sign in/i }))
+
+    await waitFor(() => {
+      expect(mockLogin).toHaveBeenCalledWith(
+        'executive@cargolens.in',
+        'DemoExecutive2026!'
+      )
+    })
+  })
+
+  it('submits manually entered credentials through the authentication context', async () => {
     render(
       <MemoryRouter>
         <LoginPage />
@@ -107,5 +173,20 @@ describe('LoginPage', () => {
 
     const emailInput = screen.getByLabelText(/work email address/i) as HTMLInputElement
     expect(emailInput.value).toBe('newuser@cargolens.in')
+  })
+
+  it('displays deployment.md reference notice when demo access is disabled by configuration', () => {
+    import.meta.env.VITE_ENABLE_DEMO_LOGINS = 'false'
+
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByText(/demo access notice/i)).toBeInTheDocument()
+    expect(screen.getByText(/deployment\.md/i)).toBeInTheDocument()
+    expect(screen.queryByTestId('demo-executive-btn')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('demo-manager-btn')).not.toBeInTheDocument()
   })
 })

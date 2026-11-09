@@ -44,6 +44,7 @@ describe('Sidebar Component', () => {
     expect(screen.getByText('Validation Issues')).toBeInTheDocument()
     expect(screen.getByText('Audit & History')).toBeInTheDocument()
     expect(screen.getByText('Manager Command Deck')).toBeInTheDocument()
+    expect(screen.getByText('Simulation Center')).toBeInTheDocument()
   })
 
   it('renders executive tier badge for executive user and omits manager-only links', () => {
@@ -73,5 +74,6 @@ describe('Sidebar Component', () => {
     expect(screen.getByText('Doc Executive')).toBeInTheDocument()
     expect(screen.getByText('Rohan Sharma')).toBeInTheDocument()
     expect(screen.queryByText('Manager Command Deck')).not.toBeInTheDocument()
+    expect(screen.queryByText('Simulation Center')).not.toBeInTheDocument()
   })
 })

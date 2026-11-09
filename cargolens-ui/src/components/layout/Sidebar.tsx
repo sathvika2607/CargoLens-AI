@@ -53,13 +53,17 @@ export const Sidebar: React.FC<{ onCloseMobile?: () => void }> = ({ onCloseMobil
     { label: 'Validation Issues', path: '/validations', icon: AlertTriangle },
     { label: 'Customs Export Portal', path: '/exports', icon: FileDown },
     { label: 'Audit & History', path: '/audit-history', icon: History },
-    {
-      label: 'Simulation Center',
-      path: '/simulation',
-      icon: Sparkles,
-      badge: 'DEMO',
-      badgeClass: 'bg-amber-900/80 text-amber-300 border-amber-700',
-    },
+    ...(isManager
+      ? [
+          {
+            label: 'Simulation Center',
+            path: '/simulation',
+            icon: Sparkles,
+            badge: 'DEMO',
+            badgeClass: 'bg-amber-900/80 text-amber-300 border-amber-700',
+          },
+        ]
+      : []),
     { label: 'System Settings', path: '/settings', icon: Settings },
   ]
 

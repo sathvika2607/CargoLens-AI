@@ -194,11 +194,11 @@ export const App: React.FC = () => {
               }
             />
 
-            {/* Screen 15: Demo Simulation Center */}
+            {/* Screen 15: Demo Simulation Center (Manager Only) */}
             <Route
               path="/simulation"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="DOCUMENTATION_MANAGER">
                   <AppShell>
                     <DemoSimulationCenterPage />
                   </AppShell>

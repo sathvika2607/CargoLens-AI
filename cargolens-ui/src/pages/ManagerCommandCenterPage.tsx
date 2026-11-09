@@ -13,6 +13,7 @@ import {
   Loader2,
   Shield,
   Activity,
+  Sparkles,
 } from 'lucide-react'
 import { listShipments } from '../api/shipments'
 import { fetchDashboardStats } from '../api/dashboard'
@@ -91,6 +92,13 @@ export const ManagerCommandCenterPage: React.FC = () => {
             <RefreshCw className="h-3.5 w-3.5 text-slate-500" />
             <span>Refresh Telemetry</span>
           </button>
+          <Link
+            to="/simulation"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg shadow-sm transition"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+            <span>Simulation Center</span>
+          </Link>
           <Link
             to="/exports"
             className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm transition"
